@@ -57,7 +57,22 @@ func (c *Config[boot]) Load() *Config[boot] {
 
 // Save will persist the current applications bootstrap settings to the settings.yml file.
 func (c *Config[boot]) Save() {
-
+	if d, err := yaml.Marshal(c.BootStrap); err != nil {
+		c.ErrCh <- err
+	} else {
+		if f, err := os.Create(c.location); err != nil {
+			c.ErrCh <- err
+		} else {
+			defer func(f *os.File) {
+				if err = f.Close(); err != nil {
+					c.ErrCh <- err
+				}
+			}(f)
+			if _, err = f.Write(d); err != nil {
+				c.ErrCh <- err
+			}
+		}
+	}
 }
 
 // LoadEnv checks for any configured BootStrap values from the environment.
