@@ -34,6 +34,13 @@ func run(w *app.Window) error {
 	var ops op.Ops
 	i := 0
 
+	temp := Button{
+		Name:   "test",
+		Width:  100,
+		Height: 20,
+		Theme:  th,
+	}
+
 	// Update the board 3 times per second.
 	advanceBoard := time.NewTicker(time.Second / 3)
 	defer advanceBoard.Stop()
@@ -51,9 +58,13 @@ func run(w *app.Window) error {
 				maroon := color.NRGBA{R: 127, G: 0, B: 0, A: 255}
 				title.Color = maroon
 				title.Alignment = text.Middle
-				title.Layout(gtx)
+				layout.Flex{Axis: layout.Vertical}.Layout(gtx,
+					layout.Rigid(title.Layout),
+					layout.Rigid(temp.Init().Render().Button.Layout),
+				)
 
 				e.Frame(gtx.Ops)
+
 			}
 		case <-advanceBoard.C:
 			i = i + 1
