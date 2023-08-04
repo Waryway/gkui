@@ -22,3 +22,4 @@ go.work
 /.idea/gkui.iml
 /.idea/modules.xml
 /.idea/vcs.xml
+/examples/

@@ -93,9 +93,9 @@ func (c *Config[boot]) LoadEnv() *Config[boot] {
 
 		envVal, Defaulted := loadFromEnv(tagName, tagDefault, c.ErrCh)
 
-		if Defaulted {
+		if Defaulted && envVal != "" {
 			log.Println("Loaded: " + tagName + "=" + envVal + " with default")
-		} else {
+		} else if envVal != "" {
 			log.Println("Loaded: " + tagName + "=" + envVal)
 		}
 
@@ -105,7 +105,11 @@ func (c *Config[boot]) LoadEnv() *Config[boot] {
 			log.Println("Missing: " + tagName + "=" + "")
 		}
 
-		reflect.ValueOf(&c.BootStrap).Elem().Field(i).SetString(envVal)
+		if reflect.ValueOf(&c.BootStrap).Elem().Field(i).String() == "" && envVal != "" {
+			reflect.ValueOf(&c.BootStrap).Elem().Field(i).SetString(envVal)
+		} else {
+			log.Println("Loaded: " + tagName + "=" + reflect.ValueOf(&c.BootStrap).Elem().Field(i).String())
+		}
 
 		if failedCount > 0 {
 			c.ErrCh <- errors.New("Failed to load" + strconv.Itoa(failedCount) + " vars")
