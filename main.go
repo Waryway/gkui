@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"gkui/env"
 	"gkui/kafka"
-	"gkui/ui"
+	"log"
+	"strings"
 )
 
 func main() {
@@ -13,9 +14,9 @@ func main() {
 	env.Config.Save()
 
 	fmt.Print(env.Config.Hello)
-	go func() {
-		ui.InitUi()
-	}()
+	//go func() {
+	//	ui.InitUi()
+	//}()
 
 	KafkaConnection := kafka.InitializeClusterAdmin("gkui", "localhost:29092")
 	defer func(kc kafka.Connection) {
@@ -26,7 +27,15 @@ func main() {
 	Ad := kafka.AdminDriver{
 		Kc: KafkaConnection,
 	}
+	if err := Ad.CreateTopic("SomeTopic", nil); err != nil {
+		log.Println(err)
+	}
 
-	Ad.TopicListString()
+	for _, name := range Ad.TopicListString() {
+		splitName := name[:strings.LastIndex(name, " ")]
+		if topicDetails := Ad.TopicDetails(splitName); topicDetails != nil {
+			log.Print(Ad.TopicDetailsString(splitName))
+		}
+	}
 
 }
