@@ -38,4 +38,5 @@ func main() {
 		}
 	}
 
+	Ad.DeleteTopic("SomeTopic")
 }
