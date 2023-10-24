@@ -98,3 +98,12 @@ func (ad AdminDriver) CreateTopic(name string, config *sarama.TopicDetail) *erro
 
 	return nil
 }
+
+func (ad AdminDriver) DeleteTopic(name string) *error {
+	if err := ad.Kc.ClusterAdmin.DeleteTopic(name); err != nil {
+		log.Println("Unable to delete topic: " + name)
+		return &err
+	}
+	log.Println("Deleted: " + name)
+	return nil
+}
