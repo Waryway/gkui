@@ -64,11 +64,11 @@ func (ad AdminDriver) TopicDetailsString(name string) string {
 	} else {
 		var result string
 		for a, b := range metadata {
-			result = result + fmt.Sprintf(`Index: %s
+			result = result + fmt.Sprintf(`Index: %v
 Name: %s
-Paritions: %s
-Version: %s
-TopicAuthorizedOperations: %s
+Paritions: %v
+Version: %v
+TopicAuthorizedOperations: %v
 Uuis: %s
 `,
 				a, b.Name,

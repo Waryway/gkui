@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gkui/env"
 	"gkui/kafka"
+	"gkui/ui"
 	"log"
 	"strings"
 )
@@ -14,9 +15,6 @@ func main() {
 	env.Config.Save()
 
 	fmt.Print(env.Config.Hello)
-	//go func() {
-	//	ui.InitUi()
-	//}()
 
 	KafkaConnection := kafka.InitializeClusterAdmin("gkui", "localhost:29092")
 	defer func(kc kafka.Connection) {
@@ -40,4 +38,8 @@ func main() {
 
 	Ad.TruncateTopic("SomeTopic")
 	Ad.DeleteTopic("SomeTopic")
+
+	go func() {
+		ui.InitUi()
+	}()
 }
