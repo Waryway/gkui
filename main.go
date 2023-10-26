@@ -38,5 +38,6 @@ func main() {
 		}
 	}
 
+	Ad.TruncateTopic("SomeTopic")
 	Ad.DeleteTopic("SomeTopic")
 }
