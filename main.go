@@ -39,6 +39,7 @@ func main() {
 	Ad.TruncateTopic("SomeTopic")
 	Ad.DeleteTopic("SomeTopic")
 
+	// nothing keeping it open currently
 	go func() {
 		ui.InitUi()
 	}()
