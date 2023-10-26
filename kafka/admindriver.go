@@ -107,3 +107,33 @@ func (ad AdminDriver) DeleteTopic(name string) *error {
 	log.Println("Deleted: " + name)
 	return nil
 }
+
+func (ad AdminDriver) TruncateTopic(name string) *error {
+	cr := sarama.ConfigResource{
+		Type:        sarama.TopicResource,
+		Name:        name,
+		ConfigNames: []string{"retention.ms"},
+	}
+	if ce, err := ad.Kc.ClusterAdmin.DescribeConfig(cr); err != nil {
+		log.Println("Failed to truncate:", cr.Name)
+		return &err
+	} else {
+		retention := ce[0].Value
+		var value string
+		entries := make(map[string]*string)
+		value = "0"
+		entries["retention.ms"] = &value
+
+		if err = ad.Kc.ClusterAdmin.AlterConfig(cr.Type, cr.Name, entries, false); err != nil {
+			log.Println("Failed to alter config to disable retention on:", cr.Name)
+			return &err
+		}
+		entries["retention.ms"] = &retention
+		if err = ad.Kc.ClusterAdmin.AlterConfig(cr.Type, cr.Name, entries, false); err != nil {
+			log.Println("Failed to alter config to re-enable retention on:", cr.Name)
+			return &err
+		}
+	}
+	log.Println("Truncated:", cr.Name)
+	return nil
+}
