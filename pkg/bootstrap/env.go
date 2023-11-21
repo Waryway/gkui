@@ -2,7 +2,7 @@ package bootstrap
 
 import (
 	"errors"
-	"fmt"
+	"gkui/pkg/logstream"
 	"gopkg.in/yaml.v3"
 	"log"
 	"os"
@@ -15,6 +15,8 @@ const (
 	DEF = "default"
 	REQ = "required"
 )
+
+var logger *logstream.LogStream
 
 type BootStrap interface {
 }
@@ -30,11 +32,11 @@ type Config[boot BootStrap] struct {
 // Init will read the settings.yml file into the bootstrap config.
 // It will override and Environment Variable settings.
 // Also initializes the channels
-func (c *Config[boot]) Init() *Config[boot] {
+func (c *Config[boot]) Init(ls *logstream.LogStream) *Config[boot] {
 	c.location = "settings.yaml"
 	c.BootCh = make(chan Config[boot])
 	c.ErrCh = make(chan error)
-
+	logger = ls
 	return c
 }
 
@@ -47,7 +49,12 @@ func (c *Config[boot]) Load() *Config[boot] {
 
 	select {
 	case err := <-c.ErrCh:
-		fmt.Println(err)
+		if logger != nil {
+			logger.DebugLog(err)
+		} else {
+			log.Println(err)
+		}
+
 	case res := <-c.BootCh:
 		return &res
 	}
@@ -94,21 +101,21 @@ func (c *Config[boot]) LoadEnv() *Config[boot] {
 		envVal, Defaulted := loadFromEnv(tagName, tagDefault, c.ErrCh)
 
 		if Defaulted && envVal != "" {
-			log.Println("Loaded: " + tagName + "=" + envVal + " with default")
+			debugLog("Loaded: " + tagName + "=" + envVal + " with default")
 		} else if envVal != "" {
-			log.Println("Loaded: " + tagName + "=" + envVal)
+			debugLog("Loaded: " + tagName + "=" + envVal)
 		}
 
 		if on, err := strconv.ParseBool(v.Type().Field(i).Tag.Get(REQ)); err == nil && on && envVal == "" {
 			failedCount++
 			failed = append(failed, tagName)
-			log.Println("Missing: " + tagName + "=" + "")
+			debugLog("Missing: " + tagName + "=" + "")
 		}
 
 		if reflect.ValueOf(&c.BootStrap).Elem().Field(i).String() == "" && envVal != "" {
 			reflect.ValueOf(&c.BootStrap).Elem().Field(i).SetString(envVal)
 		} else {
-			log.Println("Loaded: " + tagName + "=" + reflect.ValueOf(&c.BootStrap).Elem().Field(i).String())
+			debugLog("Loaded: " + tagName + "=" + reflect.ValueOf(&c.BootStrap).Elem().Field(i).String())
 		}
 
 		if failedCount > 0 {
@@ -129,7 +136,7 @@ func (c *Config[boot]) LoadYaml() *Config[boot] {
 
 func (c *Config[boot]) ReadSettingFile() *Config[boot] {
 	if file, err := os.ReadFile(c.location); err != nil {
-		log.Println("Failed to read" + c.location)
+		debugLog("Failed to read" + c.location)
 		c.ErrCh <- err
 	} else {
 		c.file = &file
@@ -151,5 +158,13 @@ func loadFromEnv(k string, def string, errorCh chan error) (string, bool) {
 		return v, true
 	} else {
 		return v, false
+	}
+}
+
+func debugLog(msg interface{}) {
+	if logger != nil {
+		logger.DebugLog(msg)
+	} else {
+		log.Println(msg)
 	}
 }

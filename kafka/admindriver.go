@@ -3,7 +3,7 @@ package kafka
 import (
 	"fmt"
 	"github.com/IBM/sarama"
-	"log"
+	"gkui/env"
 	"strconv"
 	"strings"
 )
@@ -25,14 +25,14 @@ func (ad AdminDriver) TopicListString() []string {
 	var result []string
 	if topicDetail, err := ad.Kc.ClusterAdmin.ListTopics(); err != nil {
 		result = append(result, "Failed: Topic Lookup")
-		log.Println("Failed to list topics", err.Error())
+		env.Logger.DebugLog("Failed to list topics", err.Error())
 	} else {
 		if len(topicDetail) == 0 {
 			result = append(result, "No Topics Available")
 		} else {
 			for k, v := range topicDetail {
 				result = append(result, k+" "+strconv.Itoa(int(v.NumPartitions)))
-				log.Println("k:", k, "v:", v)
+				env.Logger.DebugLog("k:", k, "v:", v)
 			}
 		}
 	}
@@ -41,7 +41,7 @@ func (ad AdminDriver) TopicListString() []string {
 
 func (ad AdminDriver) TopicExists(name string) bool {
 	for _, item := range ad.TopicListString() {
-		log.Println("Checking", item[:strings.LastIndex(item, " ")], " against ", name)
+		env.Logger.DebugLog("Comparison", "item[:strings.LastIndex(item, \" \")]", item[:strings.LastIndex(item, " ")], "name", name)
 		if item[:strings.LastIndex(item, " ")] == name {
 			return true
 		}
@@ -51,7 +51,7 @@ func (ad AdminDriver) TopicExists(name string) bool {
 
 func (ad AdminDriver) TopicDetails(name string) []*sarama.TopicMetadata {
 	if metadata, err := ad.Kc.ClusterAdmin.DescribeTopics([]string{name}); err != nil {
-		log.Println("Failed Topic Metadata", err.Error())
+		env.Logger.DebugLog("Failed Topic Metadata", err.Error())
 		return nil
 	} else {
 		return metadata
@@ -88,7 +88,7 @@ func (ad AdminDriver) CreateTopic(name string, config *sarama.TopicDetail) *erro
 	}
 
 	if ad.TopicExists(name) {
-		log.Println("Topic Already Exists and cannot be created")
+		env.Logger.DebugLog("Topic Already Exists and cannot be created")
 		return nil
 	}
 
@@ -101,10 +101,10 @@ func (ad AdminDriver) CreateTopic(name string, config *sarama.TopicDetail) *erro
 
 func (ad AdminDriver) DeleteTopic(name string) *error {
 	if err := ad.Kc.ClusterAdmin.DeleteTopic(name); err != nil {
-		log.Println("Unable to delete topic: " + name)
+		env.Logger.DebugLog("Unable to delete topic: " + name)
 		return &err
 	}
-	log.Println("Deleted: " + name)
+	env.Logger.DebugLog("Deleted: " + name)
 	return nil
 }
 
@@ -115,9 +115,10 @@ func (ad AdminDriver) TruncateTopic(name string) *error {
 		ConfigNames: []string{"retention.ms"},
 	}
 	if ce, err := ad.Kc.ClusterAdmin.DescribeConfig(cr); err != nil {
-		log.Println("Failed to truncate:", cr.Name)
+		env.Logger.DebugLog("Failed to truncate:", cr.Name)
 		return &err
 	} else {
+		env.Logger.DebugLog("Succeeded int truncate:", cr.Name)
 		retention := ce[0].Value
 		var value string
 		entries := make(map[string]*string)
@@ -125,15 +126,15 @@ func (ad AdminDriver) TruncateTopic(name string) *error {
 		entries["retention.ms"] = &value
 
 		if err = ad.Kc.ClusterAdmin.AlterConfig(cr.Type, cr.Name, entries, false); err != nil {
-			log.Println("Failed to alter config to disable retention on:", cr.Name)
+			env.Logger.DebugLog("Failed to alter config to disable retention on:", cr.Name)
 			return &err
 		}
 		entries["retention.ms"] = &retention
 		if err = ad.Kc.ClusterAdmin.AlterConfig(cr.Type, cr.Name, entries, false); err != nil {
-			log.Println("Failed to alter config to re-enable retention on:", cr.Name)
+			env.Logger.DebugLog("Failed to alter config to re-enable retention on:", cr.Name)
 			return &err
 		}
 	}
-	log.Println("Truncated:", cr.Name)
+	env.Logger.DebugLog("Truncated:", cr.Name)
 	return nil
 }

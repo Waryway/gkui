@@ -11,17 +11,20 @@ import (
 )
 
 func main() {
-	_, _, _ = env.Config.InitializeSettings()
-	env.Config.Hello = "cool"
-	env.Config.Save()
 
 	bCtx := context.Background()
 	ctx, cancel := context.WithCancel(bCtx)
 
-	ls := logstream.InitLogStream(ctx, cancel)
-	ls.Log(log.ErrorLevel, "Hello Value", env.Config.Hello)
+	_, _, _ = env.Config.InitializeSettings(logstream.InitLogStream(ctx, cancel))
+	env.Config.Hello = "cool"
+	env.Config.Save()
+	// env.Logger.ErrorLog("Hello Value", "env.Config.Hello", env.Config.Hello)
 
+	env.Logger.DebugLog("Start: Init Cluster")
+	env.Logger.DebugLog("Start: Init Cluster")
 	KafkaConnection := kafka.InitializeClusterAdmin("gkui", "localhost:29092")
+	env.Logger.DebugLog("End: Init Cluster")
+
 	defer func(kc kafka.Connection) {
 		_ = kc.ClusterAdmin.Close()
 		_ = kc.Client.Close()
@@ -31,13 +34,13 @@ func main() {
 		Kc: KafkaConnection,
 	}
 	if err := Ad.CreateTopic("SomeTopic", nil); err != nil {
-		ls.Log(log.ErrorLevel, "Create Topic Error:", err)
+		env.Logger.Log(log.ErrorLevel, "Create Topic Error:", "err", err)
 	}
 
 	for _, name := range Ad.TopicListString() {
 		splitName := name[:strings.LastIndex(name, " ")]
 		if topicDetails := Ad.TopicDetails(splitName); topicDetails != nil {
-			ls.Log(log.ErrorLevel, "Topic Detail:", Ad.TopicDetailsString(splitName))
+			env.Logger.Log(log.ErrorLevel, "Topic Detail:", "Ad.TopicDetailsString(splitName)", Ad.TopicDetailsString(splitName))
 		}
 	}
 
