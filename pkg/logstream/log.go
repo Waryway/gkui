@@ -33,7 +33,7 @@ func (ls *LogStream) New(ctx context.Context, cancelFunc context.CancelFunc) *Lo
 	ls.Ctx = ctx
 
 	go func() {
-		for i := 0; i < 3; i++ {
+		for {
 			select {
 			case errMsg := <-*ls.ErrChan:
 				if errMsg.Level == log.FatalLevel {
@@ -53,6 +53,22 @@ func (ls *LogStream) New(ctx context.Context, cancelFunc context.CancelFunc) *Lo
 	}()
 
 	return ls
+}
+
+func (ls *LogStream) DebugLog(msg interface{}, fields ...interface{}) {
+	ls.Log(log.DebugLevel, msg, fields...)
+}
+func (ls *LogStream) InfoLog(msg interface{}, fields ...interface{}) {
+	ls.Log(log.InfoLevel, msg, fields...)
+}
+func (ls *LogStream) WarnLog(msg interface{}, fields ...interface{}) {
+	ls.Log(log.WarnLevel, msg, fields...)
+}
+func (ls *LogStream) ErrorLog(msg interface{}, fields ...interface{}) {
+	ls.Log(log.ErrorLevel, msg, fields...)
+}
+func (ls *LogStream) FatalLog(msg interface{}, fields ...interface{}) {
+	ls.Log(log.FatalLevel, msg, fields...)
 }
 
 func (ls *LogStream) Log(level log.Level, msg interface{}, fields ...interface{}) {
