@@ -15,22 +15,12 @@ jobs:
         env:
           ZOOKEEPER_CLIENT_PORT: 2181
           ZOOKEEPER_TICK_TIME: 2000
-#        options: >-
-#          --health-cmd "echo mntr | nc -w 2 -q 2 localhost 2181"
-#          --health-interval 10s
-#          --health-timeout 5s
-#          --health-retries 5
         ports:
           - 22181:2181
       kafka:
         image: confluentinc/cp-kafka:latest
         ports:
           - 29092:29092
-#        options: >-
-#          --health-cmd "kafka-broker-api-versions.sh --version"
-#          --health-interval 10s
-#          --health-timeout 5s
-#          --health-retries 5
         env:
           KAFKA_BROKER_ID: 1
           KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -40,6 +30,23 @@ jobs:
           KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.20'
+
+    - name: Run Tests
+      run: go get ./... && go test -v ./...
+
+    - name: Show Test Coverage
+      run: go test -cover ./...
+
+
+
+
 #To connect to services in Docker, refer to the following ports:
 #
 #ZooKeeper: 2181
@@ -54,17 +61,3 @@ jobs:
 #      uses: ybyzek/cp-all-in-one-action@v0.2
 #      with:
 #        type: cp-all-in-one-community
-
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.20'
-
-    - name: Run Tests
-      run: go get ./... && go test -v ./...
-
-    - name: Show Test Coverage
-      run: go test -cover ./...
