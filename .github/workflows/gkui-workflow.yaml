@@ -38,9 +38,6 @@ jobs:
     - name: Show Test Coverage
       run: go test -cover ./...
 
-  e2e:
-    name: Test End to End
-    runs-on: ubuntu-latest
 
 
 #To connect to services in Docker, refer to the following ports:
