@@ -41,10 +41,6 @@ jobs:
 #Confluent Control Center: 9021
 #ksqlDB: 8088
 #Confluent REST Proxy: 8082
-    steps:
-
-
-
 
 #    services:
 #      # Label used to access the service container
