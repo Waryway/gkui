@@ -8,9 +8,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Run Confluent Platform (Confluent Server)
-      uses: ybyzek/cp-all-in-one-action@v0.2.1
-        type: cp-all-in-one-community
+    - name: Run Confluent Platform (Confluent Server and Confluent Schema Registry)
+      uses: ybyzek/cp-all-in-one-action@v0.2
+      with:
+        service: schema-registry
+
+    - name: Run Confluent Platform (Confluent Server and Confluent Schema Registry)
+      uses: ybyzek/cp-all-in-one-action@v0.2
+      with:
+        service: zookeeper
+
+    - name: Run Confluent Platform (Confluent Server and Confluent Schema Registry)
+      uses: ybyzek/cp-all-in-one-action@v0.2
+      with:
+        service: broker
+
 
     - name: Checkout code
       uses: actions/checkout@v4
