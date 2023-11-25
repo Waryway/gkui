@@ -13,7 +13,7 @@ type Connection struct {
 	ClusterAdmin sarama.ClusterAdmin
 }
 
-func InitializeClusterAdmin(Name string, Brokers string) Connection {
+func InitializeClusterAdmin(Name string, Brokers string) (Connection, error) {
 
 	conf := sarama.NewConfig()
 	conf.ClientID = Name
@@ -23,18 +23,21 @@ func InitializeClusterAdmin(Name string, Brokers string) Connection {
 		Brokers: strings.Split(Brokers, ","),
 	}
 
-	kc.LaunchClusterAdmin()
+	err := kc.LaunchClusterAdmin()
 
-	return kc
+	return kc, err
 }
 
-func (kc *Connection) LaunchClusterAdmin() {
+func (kc *Connection) LaunchClusterAdmin() error {
 	var err error
 	if kc.Client, err = sarama.NewClient(kc.Brokers, kc.Conf); err != nil {
-		log.Fatal("Failed to get a NewClient", err.Error())
+		log.Println("Failed to get a NewClient", err.Error())
+		return err
 	}
 
 	if kc.ClusterAdmin, err = sarama.NewClusterAdminFromClient(kc.Client); err != nil {
-		log.Fatal("Failed to to launch cluster admin", err.Error())
+		log.Println("Failed to to launch cluster admin", err.Error())
+		return err
 	}
+	return nil
 }

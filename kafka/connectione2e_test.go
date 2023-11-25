@@ -4,54 +4,46 @@
 package kafka
 
 import (
-	"github.com/IBM/sarama"
-	"reflect"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
-func TestConnection_LaunchClusterAdmin(t *testing.T) {
-	type fields struct {
-		Conf         *sarama.Config
-		Brokers      []string
-		Client       sarama.Client
-		ClusterAdmin sarama.ClusterAdmin
-	}
-	tests := []struct {
-		name   string
-		fields fields
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			kc := &Connection{
-				Conf:         tt.fields.Conf,
-				Brokers:      tt.fields.Brokers,
-				Client:       tt.fields.Client,
-				ClusterAdmin: tt.fields.ClusterAdmin,
-			}
-			kc.LaunchClusterAdmin()
-		})
-	}
+func TestInitializeClusterAdmin_FailNoHost(t *testing.T) {
+	_, err := InitializeClusterAdmin("notethere", "wrong:80")
+
+	assert.ErrorContains(t, err, "kafka: client has run out of available brokers to talk to: dial tcp: lookup wrong: no such host")
 }
 
 func TestInitializeClusterAdmin(t *testing.T) {
-	type args struct {
-		Name    string
-		Brokers string
-	}
-	tests := []struct {
-		name string
-		args args
-		want Connection
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := InitializeClusterAdmin(tt.args.Name, tt.args.Brokers); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("InitializeClusterAdmin() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+	KafkaConnection, err := InitializeClusterAdmin("gkui", "localhost:29092")
+
+	assert.Nil(t, err, "No Connection Error expected on e2e test")
+
+	defer func(kc Connection) {
+		_ = kc.ClusterAdmin.Close()
+		_ = kc.Client.Close()
+	}(KafkaConnection)
+}
+
+func TestConnection_LaunchClusterAdmin(t *testing.T) {
+	KafkaConnection, err := InitializeClusterAdmin("gkui", "localhost:29092")
+
+	assert.Nil(t, err, "No Connection Error expected on e2e test")
+
+	defer func(kc Connection) {
+		err1 := kc.ClusterAdmin.Close()
+		assert.Nil(t, err1, "No no error")
+		err2 := kc.Client.Close()
+		assert.ErrorContains(t, err2, "kafka: tried to use a client that was closed")
+	}(KafkaConnection)
+
+	err = KafkaConnection.LaunchClusterAdmin()
+	assert.Nil(t, err, "Cluster Admin should launch.")
+
+	assert.NotNil(t, KafkaConnection.Client, "Expected client to exist")
+	assert.NotNil(t, KafkaConnection.ClusterAdmin, "Expected client to exist")
+
+	err = KafkaConnection.ClusterAdmin.Close()
+	assert.Nil(t, err, "Cluster Admin should Close.")
+
 }
