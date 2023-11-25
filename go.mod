@@ -6,6 +6,8 @@ require (
 	gioui.org v0.3.1
 	gioui.org/x v0.3.2
 	github.com/IBM/sarama v1.41.3
+	github.com/charmbracelet/log v0.2.5
+	github.com/stretchr/testify v1.8.4
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -15,7 +17,6 @@ require (
 	git.wow.st/gmp/jni v0.0.0-20210610011705-34026c7e22d0 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/charmbracelet/lipgloss v0.8.0 // indirect
-	github.com/charmbracelet/log v0.2.5 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/eapache/go-resiliency v1.4.0 // indirect
 	github.com/eapache/go-xerial-snappy v0.0.0-20230731223053-c322873962e3 // indirect
@@ -40,6 +41,7 @@ require (
 	github.com/muesli/reflow v0.3.0 // indirect
 	github.com/muesli/termenv v0.15.2 // indirect
 	github.com/pierrec/lz4/v4 v4.1.18 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/rogpeppe/go-internal v1.11.0 // indirect

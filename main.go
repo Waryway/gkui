@@ -21,8 +21,10 @@ func main() {
 	// env.Logger.ErrorLog("Hello Value", "env.Config.Hello", env.Config.Hello)
 
 	env.Logger.DebugLog("Start: Init Cluster")
-	env.Logger.DebugLog("Start: Init Cluster")
-	KafkaConnection := kafka.InitializeClusterAdmin("gkui", "localhost:29092")
+	KafkaConnection, KafkaConnectionErr := kafka.InitializeClusterAdmin("gkui", "localhost:29092")
+	if KafkaConnectionErr != nil {
+		env.Logger.Err(log.FatalLevel, "Failed: Init Cluster", "error", KafkaConnectionErr.Error())
+	}
 	env.Logger.DebugLog("End: Init Cluster")
 
 	defer func(kc kafka.Connection) {

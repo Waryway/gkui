@@ -1,6 +1,8 @@
 package bootstrap
 
 import (
+	"context"
+	"gkui/pkg/logstream"
 	"testing"
 )
 
@@ -67,8 +69,12 @@ type exampleSettings struct {
 func TestConfig_LoadYaml(t *testing.T) {
 	bootstrap := Config[exampleSettings]{BootStrap: exampleSettings{}}
 	expected := Config[exampleSettings]{BootStrap: exampleSettings{A: "thing"}}
-	bootstrap.Init()
-	expected.Init()
+
+	bCtx := context.Background()
+	ctx, cancel := context.WithCancel(bCtx)
+	ls := logstream.InitLogStream(ctx, cancel)
+	bootstrap.Init(&ls)
+	expected.Init(&ls)
 
 	data := []byte(`
 a: thing
