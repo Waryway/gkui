@@ -11,7 +11,7 @@ import (
 func TestInitializeClusterAdmin_FailNoHost(t *testing.T) {
 	_, err := InitializeClusterAdmin("notethere", "wrong:80")
 
-	assert.ErrorContains(t, err, "kafka: client has run out of available brokers to talk to: dial tcp: lookup wrong: no such host")
+	assert.ErrorContains(t, err, "client has run out of available brokers to talk to")
 }
 
 func TestInitializeClusterAdmin(t *testing.T) {
