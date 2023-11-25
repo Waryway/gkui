@@ -15,7 +15,7 @@ func TestInitializeClusterAdmin_FailNoHost(t *testing.T) {
 }
 
 func TestInitializeClusterAdmin(t *testing.T) {
-	KafkaConnection, err := InitializeClusterAdmin("gkui", "localhost:9092")
+	KafkaConnection, err := InitializeClusterAdmin("gkui", "broker:29092")
 
 	assert.Nil(t, err, "No Connection Error expected on e2e test")
 
@@ -26,7 +26,7 @@ func TestInitializeClusterAdmin(t *testing.T) {
 }
 
 func TestConnection_LaunchClusterAdmin(t *testing.T) {
-	KafkaConnection, err := InitializeClusterAdmin("gkui", "localhost:9092")
+	KafkaConnection, err := InitializeClusterAdmin("gkui", "broker:29092")
 
 	assert.Nil(t, err, "No Connection Error expected on e2e test")
 
