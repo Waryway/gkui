@@ -17,7 +17,7 @@ func TestInitializeClusterAdmin_FailNoHost(t *testing.T) {
 func TestInitializeClusterAdmin(t *testing.T) {
 	KafkaConnection, err := InitializeClusterAdmin("gkui", "broker:29092")
 
-	assert.Nil(t, err, "No Connection Error expected on e2e test")
+	assert.Nil(t, err.Error(), "No Connection Error expected on e2e test")
 
 	defer func(kc Connection) {
 		_ = kc.ClusterAdmin.Close()
