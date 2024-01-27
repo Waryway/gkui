@@ -8,6 +8,7 @@ import (
 	"gkui/pkg/logstream"
 	"gkui/ui"
 	"strings"
+	"sync"
 )
 
 func main() {
@@ -47,9 +48,13 @@ func main() {
 	Ad.TruncateTopic("SomeTopic")
 	Ad.DeleteTopic("SomeTopic")
 
-	// nothing keeping it open currently
+	// Waitgroup to keep the headless window running on non-mobile devices.
+	var wg sync.WaitGroup
+	wg.Add(1)
 	go func() {
-		ui.InitUi()
+		ui.InitUi(&wg)
 	}()
+
+	wg.Wait()
 	cancel()
 }

@@ -4,27 +4,33 @@ import (
 	"gioui.org/app"
 	"gioui.org/io/system"
 	"gioui.org/layout"
-	"gioui.org/op"
 	"gioui.org/text"
-	"gioui.org/widget/material"
 	"image/color"
+	"sync"
+
+	//"gioui.org/layout"
+	"gioui.org/op"
+	//"gioui.org/text"
+	"gioui.org/widget/material"
+	//"image/color"
 	"log"
-	"os"
 	"strconv"
 	"time"
 )
 
 var SomString = "something"
 
-func InitUi() {
+func InitUi(wg *sync.WaitGroup) {
+
 	go func() {
+		defer wg.Done()
 		w := app.NewWindow()
 		err := run(w)
 		if err != nil {
-			log.Fatal(err)
+			log.Print(err)
 		}
-		os.Exit(0)
 	}()
+
 	app.Main()
 }
 
@@ -44,30 +50,30 @@ func run(w *app.Window) error {
 	advanceBoard := time.NewTicker(time.Second / 3)
 	defer advanceBoard.Stop()
 
+	go func() {
+		<-advanceBoard.C
+		i = i + 1
+		w.Invalidate()
+	}()
+
 	for {
-		select {
-		case e := <-w.Events():
-			switch e := e.(type) {
-			case system.DestroyEvent:
-				return e.Err
-			case system.FrameEvent:
-				gtx := layout.NewContext(&ops, e)
-				SomString = "s" + strconv.Itoa(i)
-				title := material.H1(th, SomString)
-				maroon := color.NRGBA{R: 127, G: 0, B: 0, A: 255}
-				title.Color = maroon
-				title.Alignment = text.Middle
-				layout.Flex{Axis: layout.Vertical}.Layout(gtx,
-					layout.Rigid(title.Layout),
-					layout.Rigid(temp.Init().Render().Button.Layout),
-				)
+		switch e := w.NextEvent().(type) {
+		case system.DestroyEvent:
+			return e.Err
+		case system.FrameEvent:
+			gtx := layout.NewContext(&ops, e)
+			SomString = "s" + strconv.Itoa(i)
+			title := material.H1(th, SomString)
+			maroon := color.NRGBA{R: 127, G: 0, B: 0, A: 255}
+			title.Color = maroon
+			title.Alignment = text.Middle
+			layout.Flex{Axis: layout.Vertical}.Layout(gtx,
+				layout.Rigid(title.Layout),
+				layout.Rigid(temp.Init().Render().Button.Layout),
+			)
 
-				e.Frame(gtx.Ops)
+			e.Frame(gtx.Ops)
 
-			}
-		case <-advanceBoard.C:
-			i = i + 1
-			w.Invalidate()
 		}
 	}
 }
