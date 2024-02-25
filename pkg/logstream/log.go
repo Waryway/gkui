@@ -17,6 +17,7 @@ type LogStream struct {
 	StdLog  *log.Logger
 	ErrChan *chan Message
 	StdChan *chan Message
+	OutChan *chan Message
 	Ctx     context.Context
 }
 
@@ -28,8 +29,12 @@ func (ls *LogStream) New(ctx context.Context, cancelFunc context.CancelFunc) *Lo
 
 	errChan := make(chan Message)
 	stdChan := make(chan Message)
+	outChan := make(chan Message)
+
 	ls.ErrChan = &errChan
 	ls.StdChan = &stdChan
+	ls.OutChan = &outChan
+
 	ls.Ctx = ctx
 
 	go func() {
@@ -78,6 +83,7 @@ func (ls *LogStream) Log(level log.Level, msg interface{}, fields ...interface{}
 		Fields: fields,
 	}
 	*ls.StdChan <- streamMsg
+	*ls.OutChan <- streamMsg
 }
 
 func (ls *LogStream) Err(level log.Level, msg interface{}, fields ...interface{}) {
@@ -87,6 +93,7 @@ func (ls *LogStream) Err(level log.Level, msg interface{}, fields ...interface{}
 		Fields: fields,
 	}
 	*ls.ErrChan <- streamMsg
+	*ls.OutChan <- streamMsg
 }
 
 func (ls *LogStream) writeStdLog(logger *log.Logger, msg Message) {

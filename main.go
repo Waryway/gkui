@@ -4,9 +4,9 @@ import (
 	"context"
 	"github.com/charmbracelet/log"
 	"gkui/env"
+	"gkui/gui"
 	"gkui/kafka"
 	"gkui/pkg/logstream"
-	"gkui/ui"
 	"strings"
 	"sync"
 )
@@ -15,13 +15,19 @@ func main() {
 
 	bCtx := context.Background()
 	ctx, cancel := context.WithCancel(bCtx)
+	// Waitgroup to keep the headless window running on non-mobile devices.
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		gui.InitUi(&wg, ctx, cancel)
+	}()
 
 	_, _, _ = env.Config.InitializeSettings(logstream.InitLogStream(ctx, cancel))
 	env.Config.Hello = "cool"
 	env.Config.Save()
+
 	// env.Logger.ErrorLog("Hello Value", "env.Config.Hello", env.Config.Hello)
 
-	env.Logger.DebugLog("Start: Init Cluster")
 	env.Logger.DebugLog("Start: Init Cluster")
 	KafkaConnection := kafka.InitializeClusterAdmin("gkui", "localhost:29092")
 	env.Logger.DebugLog("End: Init Cluster")
@@ -47,13 +53,6 @@ func main() {
 
 	Ad.TruncateTopic("SomeTopic")
 	Ad.DeleteTopic("SomeTopic")
-
-	// Waitgroup to keep the headless window running on non-mobile devices.
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		ui.InitUi(&wg)
-	}()
 
 	wg.Wait()
 	cancel()
